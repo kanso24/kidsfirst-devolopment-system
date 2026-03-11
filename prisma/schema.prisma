@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  firstname String
+  lastname  String
+  username  String   @unique
+  password  String
+  role      String   @default("staff") // admin, staff
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  firstname String
+  lastname  String
+  age       Int
+  address   String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  assessments Assessment[]
+}
+
+model Assessment {
+  id                Int      @id @default(autoincrement())
+  assessmentNumber  String   @unique
+  studentId         Int
+  student           Student  @relation(fields: [studentId], references: [id])
+  assessmentDate    DateTime @default(now())
+  overallScore      Float?
+  overallLevel      String?
+  status            String   @default("draft") // draft, completed
+  teacherNotes      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  domainScores      DomainScore[]
+}
+
+model DomainScore {
+  id            Int        @id @default(autoincrement())
+  assessmentId  Int
+  assessment    Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  domain        String     // sensory, visual, gross_motor, fine_motor, social_language
+  score         Float?
+  level         String?
+  observations  String?
+  questionGroupId Int?
+  questionGroup   QuestionGroup? @relation(fields: [questionGroupId], references: [id])
+  questionScores QuestionScore[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model QuestionScore {
+  id              Int         @id @default(autoincrement())
+  domainScoreId   Int
+  domainScore     DomainScore @relation(fields: [domainScoreId], references: [id], onDelete: Cascade)
+  questionText    String
+  score           Float?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model QuestionGroup {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  domain      String   // sensory, visual, gross_motor, fine_motor, social_language
+  status      String   @default("active") // active, inactive
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  questions   Question[]
+  domainScores DomainScore[]
+}
+
+model Question {
+  id            Int           @id @default(autoincrement())
+  questionGroupId Int
+  questionGroup QuestionGroup @relation(fields: [questionGroupId], references: [id], onDelete: Cascade)
+  questionText  String
+  description   String?
+  helperText    String?
+  scoreType     String       @default("numeric") // numeric, scale
+  minScore      Float        @default(1.0)
+  maxScore      Float        @default(3.0)
+  step          Float        @default(0.5)
+  required      Boolean      @default(false)
+  placeholder   String?
+  status        String       @default("active") // active, inactive
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
