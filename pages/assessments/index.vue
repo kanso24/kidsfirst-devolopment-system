@@ -87,7 +87,7 @@ const deleteAssessment = async () => {
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">View and create assessments.</p>
       </div>
       <div class="mt-4 sm:ml-4 sm:mt-0">
-        <UButton icon="i-lucide-plus" color="primary" @click="goToNewAssessment">
+        <UButton icon="i-lucide-plus" color="primary" @click="goToNewAssessment" size="lg">
           Assessment
         </UButton>
       </div>
@@ -96,8 +96,8 @@ const deleteAssessment = async () => {
     <UCard>
       <div class="flex items-center justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
         <form @submit.prevent="onSearch" class="flex gap-2 w-full max-w-sm">
-          <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search by student name..." class="w-full" />
-          <UButton type="submit" color="gray" variant="ghost">Search</UButton>
+          <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search by student name..." class="w-full" size="lg" />
+          <UButton type="submit" color="primary" variant="solid" size="lg">Search</UButton>
         </form>
         <div class="flex gap-2">
           <USelect v-model="status" :items="[{ label: 'All Status', value: 'all' }, { label: 'Draft', value: 'draft' }, { label: 'Completed', value: 'completed' }]" placeholder="Status" class="w-32" />
@@ -134,8 +134,8 @@ const deleteAssessment = async () => {
               Are you sure you want to delete assessment <strong>{{ selectedAssessment?.assessmentNumber }}</strong>? This action cannot be undone.
             </p>
             <div class="mt-6 flex justify-center gap-3">
-              <UButton color="gray" variant="ghost" @click="isConfirmOpen = false">Cancel</UButton>
-              <UButton color="red" @click="deleteAssessment" :loading="deleting">Delete</UButton>
+              <UButton color="neutral" variant="solid" size="lg" @click="isConfirmOpen = false">Cancel</UButton>
+              <UButton color="error" size="lg" @click="deleteAssessment" :loading="deleting">Delete</UButton>
             </div>
           </div>
         </UCard>

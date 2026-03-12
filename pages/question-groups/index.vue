@@ -66,7 +66,7 @@ const deleteGroup = async () => {
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage assessment question groups and questions.</p>
       </div>
       <div class="mt-4 sm:ml-4 sm:mt-0">
-        <UButton icon="i-lucide-plus" color="primary" @click="navigateTo('/question-groups/new')">
+        <UButton icon="i-lucide-plus" color="primary" @click="navigateTo('/question-groups/new')" size="lg">
           Add Group
         </UButton>
       </div>
@@ -75,8 +75,8 @@ const deleteGroup = async () => {
     <UCard>
       <div class="flex items-center justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
         <form @submit.prevent="onSearch" class="flex gap-2 w-full max-w-sm">
-          <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search groups..." class="w-full" />
-          <UButton type="submit" color="gray" variant="ghost">Search</UButton>
+          <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search groups..." class="w-full" size="lg" />
+          <UButton type="submit" color="primary" variant="solid" size="lg">Search</UButton>
         </form>
       </div>
 
@@ -108,8 +108,8 @@ const deleteGroup = async () => {
               Are you sure you want to delete <strong>{{ selectedGroup?.title }}</strong>? This action cannot be undone.
             </p>
             <div class="mt-6 flex justify-center gap-3">
-              <UButton color="gray" variant="ghost" @click="isConfirmOpen = false">Cancel</UButton>
-              <UButton color="red" @click="deleteGroup" :loading="deleting">Delete</UButton>
+              <UButton color="gray" variant="ghost" size="lg" @click="isConfirmOpen = false">Cancel</UButton>
+              <UButton color="red" size="lg" @click="deleteGroup" :loading="deleting">Delete</UButton>
             </div>
           </div>
         </UCard>

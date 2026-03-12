@@ -61,6 +61,40 @@ const { data: summaryData, pending, error } = await useFetch('/api/reports/summa
           </div>
         </div>
       </UCard>
+
+      <!-- Total Question Groups Card -->
+      <UCard :ui="{ body: { padding: 'px-4 py-5 sm:p-6' } }">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+            <UIcon name="i-lucide-list-checks" class="h-6 w-6 text-green-600 dark:text-green-400" />
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Question Groups</dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ summaryData?.summary.totalQuestionGroups || 0 }}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </UCard>
+
+      <!-- Total Assessments Card -->
+      <UCard :ui="{ body: { padding: 'px-4 py-5 sm:p-6' } }">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+            <UIcon name="i-lucide-clipboard-check" class="h-6 w-6 text-orange-600 dark:text-orange-400" />
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Assessments</dt>
+              <dd class="flex items-baseline">
+                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ summaryData?.summary.totalAssessments || 0 }}</div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </UCard>
     </div>
 
     <!-- Recent Activity -->

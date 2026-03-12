@@ -131,7 +131,7 @@ const deleteStudent = async () => {
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage student records and information.</p>
       </div>
       <div class="mt-4 sm:ml-4 sm:mt-0">
-        <UButton icon="i-lucide-plus" color="primary" @click="openCreate">
+        <UButton icon="i-lucide-plus" color="primary" @click="openCreate" size="lg">
           Add Student
         </UButton>
       </div>
@@ -140,8 +140,8 @@ const deleteStudent = async () => {
     <UCard>
       <div class="flex items-center justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
         <form @submit.prevent="onSearch" class="flex gap-2 w-full max-w-sm">
-          <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search by name or phone..." class="w-full" />
-          <UButton type="submit" color="gray" variant="ghost">Search</UButton>
+          <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search by name or phone..." class="w-full" size="lg" />
+          <UButton type="submit" color="primary" variant="solid" size="lg">Search</UButton>
         </form>
       </div>
 
@@ -175,19 +175,19 @@ const deleteStudent = async () => {
           <form @submit.prevent="saveStudent" class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <UFormField label="First Name" required>
-                <UInput v-model="formState.firstname" required />
+                <UInput v-model="formState.firstname" required size="lg" />
               </UFormField>
               <UFormField label="Last Name" required>
-                <UInput v-model="formState.lastname" required />
+                <UInput v-model="formState.lastname" required size="lg" />
               </UFormField>
             </div>
             
             <div class="grid grid-cols-2 gap-4">
               <UFormField label="Age" required>
-                <UInput v-model="formState.age" type="number" required />
+                <UInput v-model="formState.age" type="number" required size="lg" />
               </UFormField>
               <UFormField label="Phone">
-                <UInput v-model="formState.phone" />
+                <UInput v-model="formState.phone" size="lg" />
               </UFormField>
             </div>
 
@@ -196,8 +196,8 @@ const deleteStudent = async () => {
             </UFormField>
             
             <div class="flex justify-end gap-3 mt-4">
-              <UButton color="gray" variant="ghost" @click="isOpen = false">Cancel</UButton>
-              <UButton type="submit" color="primary" :loading="submitting">Save</UButton>
+              <UButton color="gray" variant="ghost" size="lg" @click="isOpen = false">Cancel</UButton>
+              <UButton type="submit" color="primary" :loading="submitting" size="lg">Save</UButton>
             </div>
           </form>
         </UCard>
@@ -215,8 +215,8 @@ const deleteStudent = async () => {
               Are you sure you want to delete <strong>{{ selectedStudent?.firstname }} {{ selectedStudent?.lastname }}</strong>? This action cannot be undone.
             </p>
             <div class="mt-6 flex justify-center gap-3">
-              <UButton color="gray" variant="ghost" @click="isConfirmOpen = false">Cancel</UButton>
-              <UButton color="red" @click="deleteStudent" :loading="submitting">Delete</UButton>
+              <UButton color="gray" variant="ghost" size="lg" @click="isConfirmOpen = false">Cancel</UButton>
+              <UButton color="red" size="lg" @click="deleteStudent" :loading="submitting">Delete</UButton>
             </div>
           </div>
         </UCard>

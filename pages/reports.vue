@@ -114,6 +114,7 @@ const exportCurrentReport = () => {
         <UButton 
           icon="i-lucide-download" 
           color="violet" 
+          size="lg"
           @click="exportCurrentReport" 
           :loading="loadingExport"
         >

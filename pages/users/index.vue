@@ -138,7 +138,7 @@ const deleteUser = async () => {
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage system users and administrators.</p>
       </div>
       <div class="mt-4 sm:ml-4 sm:mt-0">
-        <UButton icon="i-lucide-plus" color="primary" @click="openCreate">
+        <UButton icon="i-lucide-plus" color="primary" @click="openCreate" size="lg">
           Add User
         </UButton>
       </div>
@@ -147,8 +147,8 @@ const deleteUser = async () => {
     <UCard>
       <div class="flex items-center justify-between px-3 py-3.5 border-b border-gray-200 dark:border-gray-700">
         <form @submit.prevent="onSearch" class="flex gap-2">
-          <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search users..." />
-          <UButton type="submit" color="gray" variant="ghost">Search</UButton>
+          <UInput v-model="searchInput" icon="i-lucide-search" placeholder="Search users..." size="lg" />
+          <UButton type="submit" color="primary" variant="solid" size="lg">Search</UButton>
         </form>
       </div>
 
@@ -182,25 +182,25 @@ const deleteUser = async () => {
           <form @submit.prevent="saveUser" class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <UFormField label="First Name" required>
-                <UInput v-model="formState.firstname" required />
+                <UInput v-model="formState.firstname" required size="lg" />
               </UFormField>
               <UFormField label="Last Name" required>
-                <UInput v-model="formState.lastname" required />
+                <UInput v-model="formState.lastname" required size="lg" />
               </UFormField>
             </div>
             <UFormField label="Username" required>
-              <UInput v-model="formState.username" required />
+              <UInput v-model="formState.username" required size="lg" />
             </UFormField>
             <UFormField label="Password" :required="!isEditing" :help="isEditing ? 'Leave blank to keep current password' : 'At least 6 characters'">
-              <UInput v-model="formState.password" type="password" :required="!isEditing" minlength="6" />
+              <UInput v-model="formState.password" type="password" :required="!isEditing" minlength="6" size="lg" />
             </UFormField>
             <UFormField label="Role" required>
               <USelect v-model="formState.role" :options="[{ label: 'Admin', value: 'admin' }, { label: 'Staff', value: 'staff' }]" />
             </UFormField>
             
             <div class="flex justify-end gap-3 mt-4">
-              <UButton color="gray" variant="ghost" @click="isOpen = false">Cancel</UButton>
-              <UButton type="submit" color="primary" :loading="submitting">Save</UButton>
+              <UButton color="gray" variant="ghost" size="lg" @click="isOpen = false">Cancel</UButton>
+              <UButton type="submit" color="primary" :loading="submitting" size="lg">Save</UButton>
             </div>
           </form>
         </UCard>
@@ -218,8 +218,8 @@ const deleteUser = async () => {
               Are you sure you want to delete user <strong>{{ selectedUser?.username }}</strong>? This action cannot be undone.
             </p>
             <div class="mt-6 flex justify-center gap-3">
-              <UButton color="gray" variant="ghost" @click="isConfirmOpen = false">Cancel</UButton>
-              <UButton color="red" @click="deleteUser" :loading="submitting">Delete</UButton>
+              <UButton color="gray" variant="ghost" size="lg" @click="isConfirmOpen = false">Cancel</UButton>
+              <UButton color="red" size="lg" @click="deleteUser" :loading="submitting">Delete</UButton>
             </div>
           </div>
         </UCard>

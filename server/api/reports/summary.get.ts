@@ -8,9 +8,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
-  const [totalUsers, totalStudents, recentUsers, recentStudents] = await Promise.all([
+  const [totalUsers, totalStudents, totalQuestionGroups, totalAssessments, recentUsers, recentStudents] = await Promise.all([
     prisma.user.count(),
     prisma.student.count(),
+    prisma.questionGroup.count(),
+    prisma.assessment.count(),
     prisma.user.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
@@ -32,7 +34,9 @@ export default defineEventHandler(async (event) => {
   return {
     summary: {
       totalUsers,
-      totalStudents
+      totalStudents,
+      totalQuestionGroups,
+      totalAssessments
     },
     recent: {
       users: recentUsers,

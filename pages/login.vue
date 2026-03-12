@@ -56,20 +56,21 @@ const onSubmit = async () => {
         <UAlert v-if="errorMessage" icon="i-lucide-alert-triangle" color="red" variant="subtle" :title="errorMessage" class="mb-4" />
         
         <UFormField label="Username" name="username">
-          <UInput v-model="state.username" icon="i-lucide-user" placeholder="Enter your username" autocomplete="username" />
+          <UInput v-model="state.username" icon="i-lucide-user" placeholder="Enter your username" autocomplete="username" size="lg" class="w-full" />
         </UFormField>
 
         <UFormField label="Password" name="password">
-          <UInput v-model="state.password" type="password" icon="i-lucide-lock" placeholder="••••••••" autocomplete="current-password" />
+          <UInput v-model="state.password" type="password" icon="i-lucide-lock" placeholder="••••••••" autocomplete="current-password" size="lg" class="w-full"/>
         </UFormField>
 
-        <UButton type="submit" color="primary" block :loading="loading" class="mt-2">
+        <UButton type="submit" color="primary" block :loading="loading" class="mt-2" size="lg">
           Sign In
         </UButton>
       </UForm>
     </UCard>
     
     <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p>admin / password123</p>
       &copy; {{ new Date().getFullYear() }} KidsFirst Development System
     </div>
   </div>

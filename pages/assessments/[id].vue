@@ -100,8 +100,8 @@ const chartOptions = computed(() => ({
         </p>
       </div>
       <div class="mt-4 sm:ml-4 sm:mt-0 flex gap-2">
-        <UButton color="gray" variant="ghost" icon="i-lucide-pencil" @click="router.push(`/assessments/${route.params.id}/edit`)">Edit</UButton>
-        <UButton color="gray" variant="ghost" icon="i-lucide-arrow-left" @click="router.push('/assessments')">Back</UButton>
+        <UButton color="gray" variant="ghost" icon="i-lucide-pencil" size="lg" @click="router.push(`/assessments/${route.params.id}/edit`)">Edit</UButton>
+        <UButton color="gray" variant="ghost" icon="i-lucide-arrow-left" size="lg" @click="router.push('/assessments')">Back</UButton>
       </div>
     </div>
 

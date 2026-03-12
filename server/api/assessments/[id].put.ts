@@ -32,7 +32,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Assessment not found' })
   }
 
-  const overallScore = domainScores?.reduce((acc: number, ds: any) => acc + (ds.score || 0), 0) / (domainScores?.length || 1)
+  const allScores = domainScores?.flatMap((ds: any) => ds.questionScores?.map((qs: any) => qs.score) || []) || []
+  const overallScore = allScores.length > 0 ? parseFloat((allScores.reduce((a: number, b: number) => a + b, 0) / allScores.length).toFixed(2)) : 0
   const overallLevel = calculateLevel(overallScore)
 
   await prisma.domainScore.deleteMany({

@@ -6,16 +6,20 @@ ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, 
 
 const toast = useToast()
 const router = useRouter()
+const route = useRoute()
+
+const assessmentId = route.params.id
 
 const students = ref<any[]>([])
 const allQuestionGroups = ref<any[]>([])
 const submitting = ref(false)
+const loading = ref(true)
 const selectedGroupIds = ref<number[]>([])
 const selectedGroupId = ref<number | null>(null)
 
 const formState = reactive({
   studentId: null as number | null,
-  assessmentDate: new Date().toISOString().split('T')[0]
+  assessmentDate: ''
 })
 
 const domainScores = ref<Record<string, {
@@ -40,13 +44,56 @@ const getScoreOptions = (minScore: number, maxScore: number) => {
 const { data: studentsData } = await useFetch('/api/students', {
   query: { limit: 1000 }
 })
-
 students.value = studentsData.value?.students || []
 
 const { data: groupsData } = await useFetch('/api/question-groups/active')
 if (groupsData.value?.questionGroups) {
   allQuestionGroups.value = groupsData.value.questionGroups
 }
+
+const { data: assessmentData, pending: assessmentPending } = await useFetch(`/api/assessments/${assessmentId}`)
+
+watchEffect(() => {
+  if (assessmentData.value?.assessment && !loading.value) {
+    const assessment = assessmentData.value.assessment
+    formState.studentId = assessment.studentId
+    formState.assessmentDate = new Date(assessment.assessmentDate).toISOString().split('T')[0]
+    
+    domainScores.value = {}
+    selectedGroupIds.value = []
+    
+    assessment.domainScores?.forEach((ds: any) => {
+      const groupId = ds.questionGroupId
+      if (groupId) {
+        const group = allQuestionGroups.value.find(g => g.id === groupId)
+        if (group) {
+          selectedGroupIds.value.push(groupId)
+          const groupKey = `group_${groupId}`
+          domainScores.value[groupKey] = {
+            groupId: groupId,
+            groupTitle: group.title,
+            domain: group.domain,
+            score: ds.score,
+            questionGroupId: groupId,
+            questionGroup: group,
+            questions: group.questions || [],
+            questionScores: {}
+          }
+          
+          group.questions?.forEach((q: any) => {
+            const existingScore = ds.questionScores?.find((qs: any) => qs.questionText === q.questionText)
+            domainScores.value[groupKey].questionScores[q.id] = { 
+              score: existingScore?.score || q.minScore || 1, 
+              comment: existingScore?.comment || '' 
+            }
+          })
+        }
+      }
+    })
+    
+    loading.value = false
+  }
+})
 
 const initializeDomainScores = () => {
   domainScores.value = {}
@@ -204,7 +251,7 @@ const chartOptions = computed(() => ({
   }
 }))
 
-const saveAssessment = async () => {
+const updateAssessment = async () => {
   if (!formState.studentId) {
     toast.add({ title: 'Please select a student', color: 'red' })
     return
@@ -221,6 +268,7 @@ const saveAssessment = async () => {
     const payload = {
       studentId: formState.studentId,
       assessmentDate: formState.assessmentDate,
+      status: 'completed',
       domainScores: Object.values(domainScores.value).map(ds => {
         const groupKey = `group_${ds.groupId}`
         const finalScore = ds.questionGroup ? calculateDomainScore(groupKey) : ds.score
@@ -238,15 +286,15 @@ const saveAssessment = async () => {
       })
     }
 
-    await $fetch('/api/assessments', {
-      method: 'POST',
+    await $fetch(`/api/assessments/${assessmentId}`, {
+      method: 'PUT',
       body: payload
     })
 
-    toast.add({ title: 'Assessment saved successfully', color: 'green' })
-    router.push('/assessments')
+    toast.add({ title: 'Assessment updated successfully', color: 'green' })
+    router.push(`/assessments/${assessmentId}`)
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save assessment', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to update assessment', color: 'red' })
   } finally {
     submitting.value = false
   }
@@ -257,12 +305,16 @@ const saveAssessment = async () => {
   <div class="space-y-6">
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">New Assessment</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Create a new assessment for a student.</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Assessment</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update assessment for a student.</p>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div v-if="assessmentPending" class="flex justify-center py-12">
+      <UIcon name="i-lucide-loader-2" class="animate-spin h-8 w-8 text-gray-400" />
+    </div>
+
+    <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-6">
         <!-- Student Information -->
         <UCard>
@@ -352,8 +404,8 @@ const saveAssessment = async () => {
         </template>
 
         <div class="flex justify-end gap-3">
-          <UButton color="gray" variant="ghost" size="lg" @click="router.push('/assessments')">Cancel</UButton>
-          <UButton color="primary" :loading="submitting" :disabled="Object.keys(domainScores).length === 0" size="lg" @click="saveAssessment">Save Assessment</UButton>
+          <UButton color="gray" variant="ghost" size="lg" @click="router.push(`/assessments/${assessmentId}`)">Cancel</UButton>
+          <UButton color="primary" :loading="submitting" :disabled="Object.keys(domainScores).length === 0" size="lg" @click="updateAssessment">Update Assessment</UButton>
         </div>
       </div>
 
