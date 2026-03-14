@@ -8,7 +8,12 @@ export default defineNuxtConfig({
     databaseUrl: process.env.DATABASE_URL
   },
   nitro: {
-    preset: 'vercel'  // สำหรับ serverless functions รองรับ Postgres
+    preset: 'vercel',  // สำหรับ serverless functions รองรับ Postgres
+    esbuild: {
+      options: {
+        target: 'es2022'  // สำคัญสำหรับ Vercel
+      }
+    }
   },
   vite: {
     optimizeDeps: {
