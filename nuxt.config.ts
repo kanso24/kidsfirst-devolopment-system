@@ -7,6 +7,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL
   },
+  nitro: {
+    preset: 'vercel'  // สำหรับ serverless functions รองรับ Postgres
+  },
   vite: {
     optimizeDeps: {
       include: ['@vue/devtools-core', '@vue/devtools-kit']

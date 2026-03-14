@@ -4,6 +4,7 @@
 .nitro
 .cache
 .output
+.vercel
 dist
 
 # Node dependencies
