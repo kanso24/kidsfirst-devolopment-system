@@ -51,6 +51,6 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error: any) {
     if (error.statusCode) throw error
-    throw createError({ statusCode: 500, statusMessage: 'Internal server error' })
+    throw createError({ statusCode: 500, statusMessage: 'Internal server error', message: `DB Error: ${error.message}` })
   }
 })
