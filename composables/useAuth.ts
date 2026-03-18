@@ -1,6 +1,8 @@
 export const useAuth = () => {
   const user = useState<any | null>('user', () => null)
   const isAuthenticated = computed(() => !!user.value)
+  const isAdmin = computed(() => user.value?.role === 'admin')
+  const isTeacher = computed(() => user.value?.role === 'staff') // schema uses 'staff' for non-admin
 
   const fetchUser = async () => {
     try {
@@ -43,6 +45,8 @@ export const useAuth = () => {
   return {
     user,
     isAuthenticated,
+    isAdmin,
+    isTeacher,
     fetchUser,
     login,
     logout

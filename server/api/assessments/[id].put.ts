@@ -58,7 +58,8 @@ export default defineEventHandler(async (event) => {
           questionScores: {
             create: ds.questionScores?.map((qs: any) => ({
               questionText: qs.questionText,
-              score: qs.score
+              score: qs.score,
+              comment: qs.comment || ''
             }))
           }
         }))

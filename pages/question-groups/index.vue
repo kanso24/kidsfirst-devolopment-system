@@ -47,7 +47,7 @@ const deleteGroup = async () => {
   try {
     deleting.value = true
     await $fetch(`/api/question-groups/${selectedGroup.value.id}`, { method: 'DELETE' })
-    toast.add({ title: 'Question group deleted successfully', color: 'green' })
+    toast.add({ title: 'Assessments Group deleted successfully', color: 'green' })
     isConfirmOpen.value = false
     refresh()
   } catch (error: any) {
@@ -62,8 +62,8 @@ const deleteGroup = async () => {
   <div class="space-y-6">
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Question Groups</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage assessment question groups and questions.</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Assessments Group</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage assessments groups and questions.</p>
       </div>
       <div class="mt-4 sm:ml-4 sm:mt-0">
         <UButton icon="i-lucide-plus" color="primary" @click="navigateTo('/question-groups/new')" size="lg">
@@ -83,7 +83,7 @@ const deleteGroup = async () => {
       <UTable :data="data?.questionGroups || []" :columns="columns" :loading="pending">
         <template #empty-state>
           <div class="flex flex-col items-center justify-center py-6 gap-3">
-            <span class="italic text-sm text-gray-500">No question groups found</span>
+            <span class="italic text-sm text-gray-500">No assessments groups found</span>
             <UButton label="Create Group" color="primary" @click="navigateTo('/question-groups/new')" />
           </div>
         </template>
@@ -103,7 +103,7 @@ const deleteGroup = async () => {
         <UCard>
           <div class="p-4 text-center">
             <UIcon name="i-lucide-alert-triangle" class="mx-auto h-12 w-12 text-red-500 mb-4" />
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Delete Question Group</h3>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Delete Assessments Group</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400">
               Are you sure you want to delete <strong>{{ selectedGroup?.title }}</strong>? This action cannot be undone.
             </p>

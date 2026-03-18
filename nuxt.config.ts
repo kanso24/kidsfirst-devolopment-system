@@ -8,22 +8,28 @@ export default defineNuxtConfig({
     databaseUrl: process.env.DATABASE_URL
   },
   nitro: {
-    preset: 'vercel',  // สำหรับ serverless functions รองรับ Postgres
+    ...(process.env.NODE_ENV === 'production' && {
+      preset: 'vercel'
+    }),
     esbuild: {
       options: {
         target: 'es2022'  // สำคัญสำหรับ Vercel
       }
     }
   },
+  experimental: {
+    payloadExtraction: false
+  },
   vite: {
     optimizeDeps: {
       include: ['@vue/devtools-core', '@vue/devtools-kit']
     },
     server: {
+      watch: {
+        usePolling: true
+      },
       hmr: {
-        host: 'localhost',
-        port: 3000,
-        protocol: 'ws'
+        port: 24678  // เปลี่ยน HMR port
       }
     }
   }

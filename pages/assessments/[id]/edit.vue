@@ -13,7 +13,6 @@ const assessmentId = route.params.id
 const students = ref<any[]>([])
 const allQuestionGroups = ref<any[]>([])
 const submitting = ref(false)
-const loading = ref(true)
 const selectedGroupIds = ref<number[]>([])
 const selectedGroupId = ref<number | null>(null)
 
@@ -54,7 +53,7 @@ if (groupsData.value?.questionGroups) {
 const { data: assessmentData, pending: assessmentPending } = await useFetch(`/api/assessments/${assessmentId}`)
 
 watchEffect(() => {
-  if (assessmentData.value?.assessment && !loading.value) {
+  if (assessmentData.value?.assessment) {
     const assessment = assessmentData.value.assessment
     formState.studentId = assessment.studentId
     formState.assessmentDate = new Date(assessment.assessmentDate).toISOString().split('T')[0]
@@ -90,36 +89,45 @@ watchEffect(() => {
         }
       }
     })
-    
-    loading.value = false
   }
 })
 
-const initializeDomainScores = () => {
-  domainScores.value = {}
-  selectedGroupIds.value.forEach(groupId => {
-    const group = allQuestionGroups.value.find(g => g.id === groupId)
-    if (group) {
+watch(selectedGroupIds, (newIds, oldIds) => {
+  if (!oldIds || oldIds.length === 0) return
+  
+  const addedIds = newIds.filter(id => !oldIds.includes(id))
+  const removedIds = oldIds.filter(id => !newIds.includes(id))
+  
+  if (removedIds.length > 0) {
+    removedIds.forEach(groupId => {
       const groupKey = `group_${groupId}`
-      domainScores.value[groupKey] = {
-        groupId: groupId,
-        groupTitle: group.title,
-        domain: group.domain,
-        score: 2,
-        questionGroupId: groupId,
-        questionGroup: group,
-        questions: group.questions || [],
-        questionScores: {}
+      delete domainScores.value[groupKey]
+    })
+  }
+  
+  if (addedIds.length > 0) {
+    addedIds.forEach(groupId => {
+      const group = allQuestionGroups.value.find(g => g.id === groupId)
+      if (group) {
+        const groupKey = `group_${groupId}`
+        if (!domainScores.value[groupKey]) {
+          domainScores.value[groupKey] = {
+            groupId: groupId,
+            groupTitle: group.title,
+            domain: group.domain,
+            score: 2,
+            questionGroupId: groupId,
+            questionGroup: group,
+            questions: group.questions || [],
+            questionScores: {}
+          }
+          group.questions?.forEach((q: any) => {
+            domainScores.value[groupKey].questionScores[q.id] = { score: q.minScore || 1, comment: '' }
+          })
+        }
       }
-      group.questions?.forEach((q: any) => {
-        domainScores.value[groupKey].questionScores[q.id] = { score: q.minScore || 1, comment: '' }
-      })
-    }
-  })
-}
-
-watch(selectedGroupIds, () => {
-  initializeDomainScores()
+    })
+  }
 }, { deep: true })
 
 const addGroup = () => {
@@ -253,12 +261,12 @@ const chartOptions = computed(() => ({
 
 const updateAssessment = async () => {
   if (!formState.studentId) {
-    toast.add({ title: 'Please select a student', color: 'red' })
+    toast.add({ title: 'Please select a student', color: 'error' })
     return
   }
 
   if (Object.keys(domainScores.value).length === 0) {
-    toast.add({ title: 'Please select at least one question group', color: 'red' })
+    toast.add({ title: 'Please select at least one question group', color: 'error' })
     return
   }
 
@@ -291,10 +299,16 @@ const updateAssessment = async () => {
       body: payload
     })
 
-    toast.add({ title: 'Assessment updated successfully', color: 'green' })
-    router.push(`/assessments/${assessmentId}`)
+    toast.add({ title: 'Assessment updated successfully', color: 'success' })
+    
+    if (assessmentId) {
+      router.push(`/assessments/${assessmentId}/activities`)
+    } else {
+      router.push('/assessments')
+    }
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to update assessment', color: 'red' })
+    console.error('Update error:', error)
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to update assessment', color: 'error' })
   } finally {
     submitting.value = false
   }
@@ -307,6 +321,9 @@ const updateAssessment = async () => {
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Assessment</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update assessment for a student.</p>
+      </div>
+      <div class="mt-4 sm:mt-0">
+        <UButton color="neutral" variant="ghost" icon="i-lucide-arrow-left" size="lg" @click="router.push('/assessments')">Back</UButton>
       </div>
     </div>
 
@@ -404,7 +421,7 @@ const updateAssessment = async () => {
         </template>
 
         <div class="flex justify-end gap-3">
-          <UButton color="gray" variant="ghost" size="lg" @click="router.push(`/assessments/${assessmentId}`)">Cancel</UButton>
+          <UButton color="neutral" variant="ghost" size="lg" @click="router.push(`/assessments/${assessmentId}/activities`)">Cancel</UButton>
           <UButton color="primary" :loading="submitting" :disabled="Object.keys(domainScores).length === 0" size="lg" @click="updateAssessment">Update Assessment</UButton>
         </div>
       </div>

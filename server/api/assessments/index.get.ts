@@ -10,8 +10,17 @@ export default defineEventHandler(async (event) => {
   const sortBy = query.sortBy as string || 'assessmentDate'
   const sortOrder = query.sortOrder as string || 'desc'
 
-  const where: any = {
-    student: {
+  const studentId = parseInt(query.studentId as string) || 0
+  const startDate = query.startDate as string || ''
+  const endDate = query.endDate as string || ''
+  const questionGroupId = parseInt(query.questionGroupId as string) || 0
+  
+  const where: any = {}
+
+  if (studentId) {
+    where.studentId = studentId
+  } else if (search) {
+    where.student = {
       OR: [
         { firstname: { contains: search, mode: 'insensitive' } },
         { lastname: { contains: search, mode: 'insensitive' } }
@@ -23,15 +32,36 @@ export default defineEventHandler(async (event) => {
     where.status = status
   }
 
+  if (startDate) {
+    where.assessmentDate = {
+      ...where.assessmentDate,
+      gte: new Date(startDate)
+    }
+  }
+
+  if (endDate) {
+    where.assessmentDate = {
+      ...where.assessmentDate,
+      lte: new Date(endDate + 'T23:59:59.999Z')
+    }
+  }
+
+  if (questionGroupId) {
+    where.domainScores = {
+      some: {
+        questionGroupId: questionGroupId
+      }
+    }
+  }
+
   const [assessments, total] = await Promise.all([
     prisma.assessment.findMany({
       where,
       include: {
-        student: {
-          select: {
-            id: true,
-            firstname: true,
-            lastname: true
+        student: true,
+        domainScores: {
+          include: {
+            questionGroup: true
           }
         }
       },

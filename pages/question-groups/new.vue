@@ -40,7 +40,7 @@ const saveGroup = async () => {
       body
     })
     
-    toast.add({ title: 'Question group created successfully', color: 'green' })
+    toast.add({ title: 'Assessments Group created successfully', color: 'green' })
     router.push('/question-groups')
   } catch (error: any) {
     toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'red' })
@@ -55,10 +55,10 @@ const saveGroup = async () => {
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-          Add New Question Group
+          Add New Assessments Group
         </h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Create a new question group
+          Create a new assessments group
         </p>
       </div>
     </div>

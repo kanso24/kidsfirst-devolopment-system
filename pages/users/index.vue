@@ -7,9 +7,6 @@ const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
 
 const { user } = useAuth()
-if (user.value?.role !== 'admin') {
-  navigateTo('/')
-}
 
 const toast = useToast()
 
@@ -105,11 +102,11 @@ const saveUser = async () => {
       body: formState
     })
     
-    toast.add({ title: `User ${isEditing.value ? 'updated' : 'created'} successfully`, color: 'green' })
+    toast.add({ title: `User ${isEditing.value ? 'updated' : 'created'} successfully`, color: 'success' })
     isOpen.value = false
     refresh()
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'error' })
   } finally {
     submitting.value = false
   }
@@ -119,11 +116,11 @@ const deleteUser = async () => {
   try {
     submitting.value = true
     await $fetch(`/api/users/${selectedUser.value.id}`, { method: 'DELETE' })
-    toast.add({ title: 'User deleted successfully', color: 'green' })
+    toast.add({ title: 'User deleted successfully', color: 'success' })
     isConfirmOpen.value = false
     refresh()
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to delete', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to delete', color: 'error' })
   } finally {
     submitting.value = false
   }
@@ -172,7 +169,7 @@ const deleteUser = async () => {
     <!-- Create/Edit Modal -->
     <UModal v-model:open="isOpen">
       <template #content>
-        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+        <UCard>
           <template #header>
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
               {{ isEditing ? 'Edit User' : 'Add New User' }}
@@ -195,7 +192,7 @@ const deleteUser = async () => {
               <UInput v-model="formState.password" type="password" :required="!isEditing" minlength="6" size="lg" />
             </UFormField>
             <UFormField label="Role" required>
-              <USelect v-model="formState.role" :options="[{ label: 'Admin', value: 'admin' }, { label: 'Staff', value: 'staff' }]" />
+              <USelect v-model="formState.role" :items="[{ label: 'Admin', value: 'admin' }, { label: 'Staff', value: 'staff' }]" size="lg" value-key="value" />
             </UFormField>
             
             <div class="flex justify-end gap-3 mt-4">

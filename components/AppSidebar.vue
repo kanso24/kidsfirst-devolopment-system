@@ -3,41 +3,52 @@ import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+const { user, isAdmin, isTeacher, logout } = useAuth()
 
-const links = [
+const allLinks = [
   {
     label: 'Dashboard',
     icon: 'i-lucide-home',
-    to: '/'
+    to: '/',
+    adminOnly: true
   },
   {
     label: 'Users',
     icon: 'i-lucide-users',
-    to: '/users'
+    to: '/users',
+    adminOnly: true
   },
   {
     label: 'Students',
     icon: 'i-lucide-graduation-cap',
-    to: '/students'
+    to: '/students',
+    adminOnly: true
   },
   {
     label: 'Assessments',
     icon: 'i-lucide-clipboard-list',
-    to: '/assessments'
+    to: '/assessments',
+    adminOnly: false
   },
   {
-    label: 'Question Groups',
+    label: 'Assessments Group',
     icon: 'i-lucide-book-open',
-    to: '/question-groups'
+    to: '/question-groups',
+    adminOnly: true
   },
   {
     label: 'Reports',
     icon: 'i-lucide-bar-chart-3',
-    to: '/reports'
+    to: '/reports',
+    adminOnly: false
   }
 ]
 
-const isActive = (to: string) => route.path === to
+const links = computed(() =>
+  allLinks.filter(link => !link.adminOnly || isAdmin.value)
+)
+
+const isActive = (to: string) => route.path === to || (to !== '/' && route.path.startsWith(to + '/'))
 const navigate = (to: string) => router.push(to)
 </script>
 
@@ -58,7 +69,7 @@ const navigate = (to: string) => router.push(to)
           v-for="link in links"
           :key="link.to"
           variant="ghost"
-          :color="isActive(link.to) ? 'primary' : 'gray'"
+          :color="isActive(link.to) ? 'primary' : 'neutral'"
           class="w-full justify-start"
           :icon="link.icon"
           @click="navigate(link.to)"
@@ -66,6 +77,26 @@ const navigate = (to: string) => router.push(to)
           {{ link.label }}
         </UButton>
       </nav>
+    </div>
+
+    <!-- User info + role badge -->
+    <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-800">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900 flex items-center justify-center">
+          <UIcon name="i-lucide-user" class="w-4 h-4 text-violet-600 dark:text-violet-400" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+            {{ user?.firstname }} {{ user?.lastname }}
+          </p>
+          <span
+            class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
+            :class="isAdmin ? 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300' : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'"
+          >
+            {{ isAdmin ? 'Admin' : 'Teacher' }}
+          </span>
+        </div>
+      </div>
     </div>
   </aside>
 </template>

@@ -206,12 +206,12 @@ const chartOptions = computed(() => ({
 
 const saveAssessment = async () => {
   if (!formState.studentId) {
-    toast.add({ title: 'Please select a student', color: 'red' })
+    toast.add({ title: 'Please select a student', color: 'error' })
     return
   }
 
   if (Object.keys(domainScores.value).length === 0) {
-    toast.add({ title: 'Please select at least one question group', color: 'red' })
+    toast.add({ title: 'Please select at least one question group', color: 'error' })
     return
   }
 
@@ -238,15 +238,24 @@ const saveAssessment = async () => {
       })
     }
 
-    await $fetch('/api/assessments', {
+    const response = await $fetch<any>('/api/assessments', {
       method: 'POST',
       body: payload
     })
 
-    toast.add({ title: 'Assessment saved successfully', color: 'green' })
-    router.push('/assessments')
+    toast.add({ title: 'Assessment saved successfully', color: 'success' })
+    
+    // The server returns { message, assessment: { id, ... } }
+    const newId = response?.assessment?.id || response?.id
+    
+    if (newId) {
+      router.push(`/assessments/${newId}/activities`)
+    } else {
+      router.push('/assessments')
+    }
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save assessment', color: 'red' })
+    console.error('Save error:', error)
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save assessment', color: 'error' })
   } finally {
     submitting.value = false
   }
@@ -306,7 +315,7 @@ const saveAssessment = async () => {
                   <p class="font-medium">{{ allQuestionGroups.find(g => g.id === groupId)?.title }}</p>
                   <p class="text-sm text-gray-500">{{ allQuestionGroups.find(g => g.id === groupId)?.domain }}</p>
                 </div>
-                <UButton size="xs" variant="ghost" color="red" icon="i-lucide-x" @click="removeGroup(groupId)" />
+                <UButton size="xs" variant="ghost" color="error" icon="i-lucide-x" @click="removeGroup(groupId)" />
               </div>
             </div>
           </div>
@@ -352,7 +361,7 @@ const saveAssessment = async () => {
         </template>
 
         <div class="flex justify-end gap-3">
-          <UButton color="gray" variant="ghost" size="lg" @click="router.push('/assessments')">Cancel</UButton>
+          <UButton color="neutral" variant="ghost" size="lg" @click="router.push('/assessments')">Cancel</UButton>
           <UButton color="primary" :loading="submitting" :disabled="Object.keys(domainScores).length === 0" size="lg" @click="saveAssessment">Save Assessment</UButton>
         </div>
       </div>

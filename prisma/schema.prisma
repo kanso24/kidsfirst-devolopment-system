@@ -67,6 +67,7 @@ model QuestionScore {
   domainScore     DomainScore @relation(fields: [domainScoreId], references: [id], onDelete: Cascade)
   questionText    String
   score           Float?
+  comment         String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }

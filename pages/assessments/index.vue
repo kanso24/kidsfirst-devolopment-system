@@ -22,6 +22,10 @@ const columns: TableColumn<any>[] = [
   { accessorKey: 'assessmentNumber', header: 'Assessment #' },
   { accessorKey: 'student', header: 'Student Name', cell: ({ row }) => `${row.original.student?.firstname} ${row.original.student?.lastname}` },
   { accessorKey: 'assessmentDate', header: 'Assessment Date', cell: ({ row }) => new Date(row.original.assessmentDate).toLocaleDateString() },
+  { accessorKey: 'questionGroups', header: 'Assessment Group', cell: ({ row }) => {
+    const groups = row.original.domainScores?.map((ds: any) => ds.questionGroup?.title).filter(Boolean) || []
+    return groups.length > 0 ? groups.join(', ') : '-'
+  }},
   { accessorKey: 'overallScore', header: 'Overall Score', cell: ({ row }) => row.original.overallScore?.toFixed(2) || '-' },
   { accessorKey: 'overallLevel', header: 'Overall Level', cell: ({ row }) => h('span', { class: `px-2 py-1 rounded-full text-xs ${getLevelClass(row.original.overallLevel)}` }, row.original.overallLevel || '-') },
   { accessorKey: 'status', header: 'Status', cell: ({ row }) => h('span', { class: `px-2 py-1 rounded-full text-xs ${row.original.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}` }, row.original.status) },

@@ -71,13 +71,13 @@ const saveGroup = async () => {
         method: 'PUT',
         body
       })
-      toast.add({ title: 'Question group updated successfully', color: 'green' })
+      toast.add({ title: 'Assessments Group updated successfully', color: 'green' })
     } else {
       await $fetch('/api/question-groups', {
         method: 'POST',
         body
       })
-      toast.add({ title: 'Question group created successfully', color: 'green' })
+      toast.add({ title: 'Assessments Group created successfully', color: 'green' })
     }
     
     router.push('/question-groups')
@@ -94,10 +94,10 @@ const saveGroup = async () => {
     <div class="sm:flex sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-          {{ isEditing ? 'Edit Question Group' : 'Add New Question Group' }}
+          {{ isEditing ? 'Edit Assessments Group' : 'Add New Assessments Group' }}
         </h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {{ isEditing ? 'Update question group details' : 'Create a new question group' }}
+          {{ isEditing ? 'Update assessments group details' : 'Create a new assessments group' }}
         </p>
       </div>
     </div>
