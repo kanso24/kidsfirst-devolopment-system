@@ -54,7 +54,7 @@ const userColumns: TableColumn<any>[] = [
   { 
     accessorKey: 'role', 
     header: 'Role',
-    cell: ({ row }) => h(UBadge, { color: row.original.role === 'admin' ? 'violet' : 'gray', variant: 'soft' }, () => row.original.role)
+    cell: ({ row }) => h(UBadge, { color: row.original.role === 'admin' ? 'primary' : 'neutral', variant: 'soft' }, () => row.original.role)
   },
   { 
     accessorKey: 'createdAt', 
@@ -74,14 +74,14 @@ const exportCurrentReport = () => {
 
     if (currentTab === 'students') {
       title = 'System Students Report'
-      filename = `students-report-${new Date().toISOString().split('T')[0]}.pdf`
+      filename = `students-report-${new Date().toISOString().slice(0, 10)}.pdf`
       columns = studentColumns.map(c => c.label)
       rows = (studentsData.value?.data || []).map((s: any) => [
         s.id, s.firstname, s.lastname, s.age, s.phone || '-', new Date(s.createdAt).toLocaleDateString()
       ])
     } else if (currentTab === 'users') {
       title = 'System Users Report'
-      filename = `users-report-${new Date().toISOString().split('T')[0]}.pdf`
+      filename = `users-report-${new Date().toISOString().slice(0, 10)}.pdf`
       columns = userColumns.map(c => c.label)
       rows = (usersData.value?.data || []).map((u: any) => [
         u.id, u.firstname, u.lastname, u.username, u.role, new Date(u.createdAt).toLocaleDateString()
@@ -89,14 +89,14 @@ const exportCurrentReport = () => {
     }
 
     if (rows.length === 0) {
-      toast.add({ title: 'No data to export', color: 'orange' })
+      toast.add({ title: 'No data to export', color: 'warning' })
       return
     }
 
     exportTableToPdf(title, columns, rows, filename)
-    toast.add({ title: 'Report exported successfully', color: 'green' })
+    toast.add({ title: 'Report exported successfully', color: 'success' })
   } catch (error: any) {
-    toast.add({ title: 'Export failed', description: error.message, color: 'red' })
+    toast.add({ title: 'Export failed', description: error.message, color: 'error' })
   } finally {
     loadingExport.value = false
   }
@@ -113,7 +113,7 @@ const exportCurrentReport = () => {
       <div class="mt-4 sm:ml-4 sm:mt-0">
         <UButton 
           icon="i-lucide-download" 
-          color="violet" 
+          color="primary" 
           size="lg"
           @click="exportCurrentReport" 
           :loading="loadingExport"

@@ -51,7 +51,7 @@ onMounted(async () => {
         questions.value = group.questions || []
       }
     } catch (e) {
-      toast.add({ title: 'Error loading group', color: 'red' })
+      toast.add({ title: 'Error loading group', color: 'error' })
     }
   }
   loading.value = false
@@ -71,18 +71,18 @@ const saveGroup = async () => {
         method: 'PUT',
         body
       })
-      toast.add({ title: 'Assessments Group updated successfully', color: 'green' })
+      toast.add({ title: 'Assessments Group updated successfully', color: 'success' })
     } else {
       await $fetch('/api/question-groups', {
         method: 'POST',
         body
       })
-      toast.add({ title: 'Assessments Group created successfully', color: 'green' })
+      toast.add({ title: 'Assessments Group created successfully', color: 'success' })
     }
     
     router.push('/question-groups')
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'error' })
   } finally {
     submitting.value = false
   }

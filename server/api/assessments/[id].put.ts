@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const { assessmentDate, domainScores, teacherNotes, status } = body
+  const { assessmentDate, domainScores, teacherNotes, summary, recommendation, status } = body
 
   const existing = await prisma.assessment.findUnique({
     where: { id: parseInt(id) },
@@ -47,6 +47,8 @@ export default defineEventHandler(async (event) => {
       overallScore,
       overallLevel,
       teacherNotes,
+      summary,
+      recommendation,
       status,
       domainScores: {
         create: domainScores?.map((ds: any) => ({

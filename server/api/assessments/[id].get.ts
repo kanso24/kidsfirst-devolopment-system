@@ -16,7 +16,11 @@ export default defineEventHandler(async (event) => {
           id: true,
           firstname: true,
           lastname: true,
-          age: true
+          age: true,
+          image: true,
+          gender: true,
+          parentName: true,
+          birthDate: true
         }
       },
       domainScores: {

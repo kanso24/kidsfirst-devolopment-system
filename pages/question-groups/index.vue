@@ -23,8 +23,8 @@ const columns: TableColumn<any>[] = [
     accessorKey: 'actions', 
     header: 'Actions',
     cell: ({ row }) => h('div', { class: 'flex items-center gap-2' }, [
-      h(UButton, { color: 'gray', variant: 'ghost', icon: 'i-lucide-pencil', size: 'sm', onClick: () => navigateTo(`/question-groups/edit/${row.original.id}`) }),
-      h(UButton, { color: 'red', variant: 'ghost', icon: 'i-lucide-trash-2', size: 'sm', onClick: () => confirmDelete(row.original) })
+      h(UButton, { color: 'neutral', variant: 'ghost', icon: 'i-lucide-pencil', size: 'sm', onClick: () => navigateTo(`/question-groups/edit/${row.original.id}`) }),
+      h(UButton, { color: 'error', variant: 'ghost', icon: 'i-lucide-trash-2', size: 'sm', onClick: () => confirmDelete(row.original) })
     ])
   }
 ]
@@ -47,11 +47,11 @@ const deleteGroup = async () => {
   try {
     deleting.value = true
     await $fetch(`/api/question-groups/${selectedGroup.value.id}`, { method: 'DELETE' })
-    toast.add({ title: 'Assessments Group deleted successfully', color: 'green' })
+    toast.add({ title: 'Assessments Group deleted successfully', color: 'success' })
     isConfirmOpen.value = false
     refresh()
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to delete', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to delete', color: 'error' })
   } finally {
     deleting.value = false
   }
@@ -108,8 +108,8 @@ const deleteGroup = async () => {
               Are you sure you want to delete <strong>{{ selectedGroup?.title }}</strong>? This action cannot be undone.
             </p>
             <div class="mt-6 flex justify-center gap-3">
-              <UButton color="gray" variant="ghost" size="lg" @click="isConfirmOpen = false">Cancel</UButton>
-              <UButton color="red" size="lg" @click="deleteGroup" :loading="deleting">Delete</UButton>
+              <UButton color="neutral" variant="ghost" size="lg" @click="isConfirmOpen = false">Cancel</UButton>
+              <UButton color="error" size="lg" @click="deleteGroup" :loading="deleting">Delete</UButton>
             </div>
           </div>
         </UCard>

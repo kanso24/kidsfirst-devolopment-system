@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const { studentId, assessmentDate, domainScores, teacherNotes } = body
+  const { studentId, assessmentDate, domainScores, teacherNotes, summary, recommendation } = body
 
   if (!studentId) {
     throw createError({ statusCode: 400, statusMessage: 'Student is required' })
@@ -53,6 +53,8 @@ export default defineEventHandler(async (event) => {
       overallLevel,
       status: 'completed',
       teacherNotes,
+      summary,
+      recommendation,
       domainScores: {
         create: domainScores?.map((ds: any) => ({
           domain: ds.domain,
@@ -63,7 +65,8 @@ export default defineEventHandler(async (event) => {
           questionScores: {
             create: ds.questionScores?.map((qs: any) => ({
               questionText: qs.questionText,
-              score: qs.score
+              score: qs.score,
+              comment: qs.comment || ''
             }))
           }
         }))

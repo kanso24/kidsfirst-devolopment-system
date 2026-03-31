@@ -13,9 +13,16 @@ const submitting = ref(false)
 const selectedGroupIds = ref<number[]>([])
 const selectedGroupId = ref<number | null>(null)
 
+const selectedStudent = computed(() => {
+  return students.value.find(s => s.id === formState.studentId)
+})
+
 const formState = reactive({
   studentId: null as number | null,
-  assessmentDate: new Date().toISOString().split('T')[0]
+  assessmentDate: new Date().toISOString().slice(0, 10),
+  summary: '',
+  recommendation: '',
+  teacherNotes: ''
 })
 
 const domainScores = ref<Record<string, {
@@ -28,6 +35,9 @@ const domainScores = ref<Record<string, {
   questions: any[]
   questionScores: Record<string, { score: number; comment: string }>
 }>>({})
+
+const hasDomainScores = computed(() => Object.keys(domainScores.value).length > 0)
+const domainScoresList = computed(() => Object.entries(domainScores.value).map(([key, val]) => ({ key, ...val })))
 
 const getScoreOptions = (minScore: number, maxScore: number) => {
   const options: number[] = []
@@ -48,27 +58,37 @@ if (groupsData.value?.questionGroups) {
   allQuestionGroups.value = groupsData.value.questionGroups
 }
 
+const getInitialDomainScore = (groupId: number) => {
+  const group = allQuestionGroups.value.find(g => g.id === groupId)
+  if (!group) return null
+  
+  const initial: any = {
+    groupId: groupId,
+    groupTitle: group.title,
+    domain: group.domain,
+    score: 2,
+    questionGroupId: groupId,
+    questionGroup: group,
+    questions: group.questions || [],
+    questionScores: {}
+  }
+  
+  group.questions?.forEach((q: any) => {
+    initial.questionScores[q.id] = { score: q.minScore || 1, comment: '' }
+  })
+  
+  return initial
+}
+
 const initializeDomainScores = () => {
-  domainScores.value = {}
+  const newDomainScores: any = {}
   selectedGroupIds.value.forEach(groupId => {
-    const group = allQuestionGroups.value.find(g => g.id === groupId)
-    if (group) {
-      const groupKey = `group_${groupId}`
-      domainScores.value[groupKey] = {
-        groupId: groupId,
-        groupTitle: group.title,
-        domain: group.domain,
-        score: 2,
-        questionGroupId: groupId,
-        questionGroup: group,
-        questions: group.questions || [],
-        questionScores: {}
-      }
-      group.questions?.forEach((q: any) => {
-        domainScores.value[groupKey].questionScores[q.id] = { score: q.minScore || 1, comment: '' }
-      })
+    const initial = getInitialDomainScore(groupId)
+    if (initial) {
+      newDomainScores[`group_${groupId}`] = initial
     }
   })
+  domainScores.value = newDomainScores
 }
 
 watch(selectedGroupIds, () => {
@@ -87,11 +107,15 @@ const removeGroup = (groupId: number) => {
 }
 
 const setQuestionScore = (groupKey: string, questionId: number, score: number) => {
-  domainScores.value[groupKey].questionScores[questionId].score = score
+  if (domainScores.value[groupKey]?.questionScores?.[questionId]) {
+    domainScores.value[groupKey].questionScores[questionId].score = score
+  }
 }
 
 const setQuestionComment = (groupKey: string, questionId: number, comment: string) => {
-  domainScores.value[groupKey].questionScores[questionId].comment = comment
+  if (domainScores.value[groupKey]?.questionScores?.[questionId]) {
+    domainScores.value[groupKey].questionScores[questionId].comment = comment
+  }
 }
 
 const calculateDomainScore = (groupKey: string) => {
@@ -125,7 +149,7 @@ const getLevelClass = (level: string) => {
   }
 }
 
-const getScoreButtonClass = (score: number, currentScore: number) => {
+const getScoreButtonClass = (score: number, currentScore: number | undefined) => {
   const base = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all'
   if (score === currentScore) {
     return `${base} bg-violet-600 text-white`
@@ -221,6 +245,9 @@ const saveAssessment = async () => {
     const payload = {
       studentId: formState.studentId,
       assessmentDate: formState.assessmentDate,
+      summary: formState.summary,
+      recommendation: formState.recommendation,
+      teacherNotes: formState.teacherNotes,
       domainScores: Object.values(domainScores.value).map(ds => {
         const groupKey = `group_${ds.groupId}`
         const finalScore = ds.questionGroup ? calculateDomainScore(groupKey) : ds.score
@@ -286,6 +313,35 @@ const saveAssessment = async () => {
               <UInput v-model="formState.assessmentDate" type="date" size="lg" class="w-full" />
             </UFormField>
           </div>
+
+          <!-- Selected Student Info Display -->
+          <div v-if="selectedStudent" class="mt-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-6">
+            <div class="flex-shrink-0">
+              <img v-if="selectedStudent.image" :src="selectedStudent.image" class="h-20 w-20 rounded-full object-cover border-2 border-violet-500 shadow-sm" />
+              <div v-else class="h-20 w-20 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center border-2 border-dashed border-violet-300 dark:border-violet-700">
+                <UIcon name="i-lucide-user" class="h-10 w-10 text-violet-500" />
+              </div>
+            </div>
+            <div class="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Gender</p>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white capitalize">{{ selectedStudent.gender || '-' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Age</p>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ selectedStudent.age }} months</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Parent Name</p>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ selectedStudent.parentName || '-' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Birth Date</p>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ selectedStudent.birthDate ? new Date(selectedStudent.birthDate).toLocaleDateString() : '-' }}</p>
+              </div>
+            </div>
+          </div>
+
           <div class="mt-4">
             <UFormField label="Select Question Groups">
               <div class="flex gap-2">
@@ -321,9 +377,27 @@ const saveAssessment = async () => {
           </div>
         </UCard>
 
+        <!-- Assessment Notes -->
+        <UCard>
+          <template #header>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Assessment Notes</h3>
+          </template>
+          <div class="space-y-4">
+            <UFormField label="Assessment Summary" help="Provide a brief summary of the assessment findings.">
+              <UTextarea v-model="formState.summary" placeholder="Enter assessment summary..." class="w-full" size="lg" :rows="3" />
+            </UFormField>
+            <UFormField label="Assessment Recommendations" help="Provide recommendations based on the assessment.">
+              <UTextarea v-model="formState.recommendation" placeholder="Enter recommendations..." class="w-full" size="lg" :rows="3" />
+            </UFormField>
+            <UFormField label="Teacher Notes" help="Additional notes for the teacher.">
+              <UTextarea v-model="formState.teacherNotes" placeholder="Enter teacher notes..." class="w-full" size="lg" :rows="3" />
+            </UFormField>
+          </div>
+        </UCard>
+
         <!-- Assessment Information -->
-        <template v-if="Object.keys(domainScores).length > 0">
-          <UCard v-for="(ds, groupKey) in domainScores" :key="groupKey">
+        <template v-if="hasDomainScores">
+          <UCard v-for="ds in domainScoresList" :key="ds.key">
             <template #header>
               <div class="flex items-center justify-between">
                 <h3 class="text-base font-semibold">{{ ds.groupTitle }}</h3>
@@ -343,16 +417,18 @@ const saveAssessment = async () => {
                       v-for="score in getScoreOptions(question.minScore || 1, question.maxScore || 3)"
                       :key="score"
                       :class="getScoreButtonClass(score, ds.questionScores[question.id]?.score)"
-                      @click="setQuestionScore(groupKey, question.id, score)"
+                      @click="setQuestionScore(ds.key, question.id, score)"
                     >
                       {{ score }}
                     </button>
                   </div>
                   <UInput 
-                    v-model="ds.questionScores[question.id].comment" 
+                    v-if="ds.questionScores[question.id]"
+                    :model-value="ds.questionScores[question.id].comment" 
                     placeholder="Comments"
                     class="w-full"
                     size="lg"
+                    @update:model-value="val => setQuestionComment(ds.key, question.id, val)"
                   />
                 </div>
               </div>
@@ -373,7 +449,7 @@ const saveAssessment = async () => {
             <h3 class="text-base font-semibold">Summary Assessment Scores</h3>
           </template>
           
-          <div v-if="Object.keys(domainScores).length > 0" class="space-y-4">
+          <div v-if="hasDomainScores" class="space-y-4">
             <!-- Overall Score -->
             <div class="p-4 bg-violet-50 dark:bg-violet-900/20 rounded-lg">
               <div class="flex items-center justify-between">

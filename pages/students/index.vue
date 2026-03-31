@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h, resolveComponent } from 'vue'
+import { h, resolveComponent, watch } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 
 const UButton = resolveComponent('UButton')
@@ -17,9 +17,20 @@ const { data, pending, refresh } = await useFetch('/api/students', {
 })
 
 const columns: TableColumn<any>[] = [
+  { 
+    accessorKey: 'image', 
+    header: 'Photo',
+    cell: ({ row }) => row.original.image ? h('img', { src: row.original.image, class: 'h-10 w-10 rounded-full object-cover border border-gray-200' }) : h('div', { class: 'h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200' }, [h('span', { class: 'text-xs text-gray-400' }, 'No Pic')])
+  },
   { accessorKey: 'firstname', header: 'First Name' },
   { accessorKey: 'lastname', header: 'Last Name' },
-  { accessorKey: 'age', header: 'Age' },
+  { accessorKey: 'age', header: 'Age (Months)' },
+  { accessorKey: 'gender', header: 'Gender' },
+  { 
+    accessorKey: 'parentName', 
+    header: 'Parent',
+    cell: ({ row }) => row.original.parentName || '-'
+  },
   { 
     accessorKey: 'phone', 
     header: 'Phone',
@@ -50,9 +61,13 @@ const formState = reactive({
   id: 0,
   firstname: '',
   lastname: '',
+  gender: '',
+  birthDate: '',
+  parentName: '',
   age: null as number | null,
   address: '',
-  phone: ''
+  phone: '',
+  image: ''
 })
 
 const onSearch = () => {
@@ -65,9 +80,13 @@ const openCreate = () => {
   formState.id = 0
   formState.firstname = ''
   formState.lastname = ''
+  formState.gender = ''
+  formState.birthDate = ''
+  formState.parentName = ''
   formState.age = null
   formState.address = ''
   formState.phone = ''
+  formState.image = ''
   isOpen.value = true
 }
 
@@ -76,9 +95,13 @@ const openEdit = (row: any) => {
   formState.id = row.id
   formState.firstname = row.firstname
   formState.lastname = row.lastname
+  formState.gender = row.gender || ''
+  formState.birthDate = row.birthDate ? new Date(row.birthDate).toISOString().slice(0, 10) : ''
+  formState.parentName = row.parentName || ''
   formState.age = row.age
   formState.address = row.address || ''
   formState.phone = row.phone || ''
+  formState.image = row.image || ''
   isOpen.value = true
 }
 
@@ -86,6 +109,38 @@ const confirmDelete = (row: any) => {
   selectedStudent.value = row
   isConfirmOpen.value = true
 }
+
+const handleFileChange = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (file) {
+    if (file.size > 2 * 1024 * 1024) {
+      toast.add({ title: 'Error', description: 'Image size should be less than 2MB', color: 'error' })
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      formState.image = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+watch(() => formState.birthDate, (newDate) => {
+  if (newDate) {
+    const birth = new Date(newDate)
+    const now = new Date()
+    const years = now.getFullYear() - birth.getFullYear()
+    const months = now.getMonth() - birth.getMonth()
+    let totalMonths = years * 12 + months
+    
+    // Adjustment if the day of current month is before the birthday
+    if (now.getDate() < birth.getDate()) {
+      totalMonths--
+    }
+    
+    formState.age = totalMonths >= 0 ? totalMonths : 0
+  }
+})
 
 const saveStudent = async () => {
   try {
@@ -98,11 +153,11 @@ const saveStudent = async () => {
       body: formState
     })
     
-    toast.add({ title: `Student ${isEditing.value ? 'updated' : 'created'} successfully`, color: 'green' })
+    toast.add({ title: `Student ${isEditing.value ? 'updated' : 'created'} successfully`, color: 'success' })
     isOpen.value = false
     refresh()
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'error' })
   } finally {
     submitting.value = false
   }
@@ -112,11 +167,11 @@ const deleteStudent = async () => {
   try {
     submitting.value = true
     await $fetch(`/api/students/${selectedStudent.value.id}`, { method: 'DELETE' })
-    toast.add({ title: 'Student deleted successfully', color: 'green' })
+    toast.add({ title: 'Student deleted successfully', color: 'success' })
     isConfirmOpen.value = false
     refresh()
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to delete', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to delete', color: 'error' })
   } finally {
     submitting.value = false
   }
@@ -165,7 +220,11 @@ const deleteStudent = async () => {
     <!-- Create/Edit Modal -->
     <UModal v-model:open="isOpen">
       <template #content>
-        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+        <UCard :ui="{ 
+          ring: '', 
+          divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+          body: 'max-h-[60vh] overflow-y-auto'
+        }">
           <template #header>
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
               {{ isEditing ? 'Edit Student' : 'Add New Student' }}
@@ -173,6 +232,20 @@ const deleteStudent = async () => {
           </template>
 
           <form @submit.prevent="saveStudent" class="space-y-4">
+            <div class="flex flex-col items-center gap-4 mb-4">
+              <div class="relative group">
+                <img v-if="formState.image" :src="formState.image" class="h-24 w-24 rounded-full object-cover border-2 border-primary" />
+                <div v-else class="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
+                  <UIcon name="i-lucide-user" class="h-10 w-10 text-gray-400" />
+                </div>
+                <label class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                  <UIcon name="i-lucide-camera" class="h-6 w-6 text-white" />
+                  <input type="file" class="hidden" accept="image/*" @change="handleFileChange" />
+                </label>
+              </div>
+              <p class="text-xs text-gray-500">Click to upload photo (Max 2MB)</p>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
               <UFormField label="First Name" required>
                 <UInput v-model="formState.firstname" required size="lg" />
@@ -183,13 +256,30 @@ const deleteStudent = async () => {
             </div>
             
             <div class="grid grid-cols-2 gap-4">
-              <UFormField label="Age" required>
-                <UInput v-model="formState.age" type="number" required size="lg" />
+              <UFormField label="Age (Months)" required>
+                <UInput v-model="formState.age" type="number" required size="lg">
+                  <template #trailing>
+                    <span class="text-xs text-gray-400 mr-2">months</span>
+                  </template>
+                </UInput>
+              </UFormField>
+              <UFormField label="Gender">
+                <URadioGroup v-model="formState.gender" :items="[{ label: 'Male', value: 'male' }, { label: 'Female', value: 'female' }]" orientation="horizontal" size="lg" class="mt-2" />
+              </UFormField>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <UFormField label="Date of Birth">
+                <UInput v-model="formState.birthDate" type="date" size="lg" class="w-full" />
               </UFormField>
               <UFormField label="Phone">
                 <UInput v-model="formState.phone" size="lg" />
               </UFormField>
             </div>
+
+            <UFormField label="Parent Name">
+              <UInput v-model="formState.parentName" size="lg" />
+            </UFormField>
 
             <UFormField label="Address">
               <UTextarea v-model="formState.address" :rows="3" />

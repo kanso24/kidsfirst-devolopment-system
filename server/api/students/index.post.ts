@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const { firstname, lastname, age, address, phone } = body
+  const { firstname, lastname, age, address, phone, gender, birthDate, parentName, image } = body
 
   if (!firstname || !lastname || age === undefined) {
     throw createError({ statusCode: 400, statusMessage: 'Firstname, lastname, and age are required' })
@@ -25,7 +25,11 @@ export default defineEventHandler(async (event) => {
       lastname,
       age: parseInt(age),
       address: address || null,
-      phone: phone || null
+      phone: phone || null,
+      gender: gender || null,
+      birthDate: birthDate ? new Date(birthDate) : null,
+      parentName: parentName || null,
+      image: image || null
     }
   })
 

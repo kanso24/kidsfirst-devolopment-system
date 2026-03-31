@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const { firstname, lastname, age, address, phone } = body
+  const { firstname, lastname, age, address, phone, gender, birthDate, parentName, image } = body
 
   const existingStudent = await prisma.student.findUnique({ where: { id } })
   if (!existingStudent) {
@@ -25,7 +25,11 @@ export default defineEventHandler(async (event) => {
     firstname: firstname || existingStudent.firstname,
     lastname: lastname || existingStudent.lastname,
     address: address !== undefined ? address : existingStudent.address,
-    phone: phone !== undefined ? phone : existingStudent.phone
+    phone: phone !== undefined ? phone : existingStudent.phone,
+    gender: gender !== undefined ? gender : existingStudent.gender,
+    birthDate: birthDate !== undefined ? (birthDate ? new Date(birthDate) : null) : existingStudent.birthDate,
+    parentName: parentName !== undefined ? parentName : existingStudent.parentName,
+    image: image !== undefined ? image : existingStudent.image
   }
 
   if (age !== undefined) {

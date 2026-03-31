@@ -175,7 +175,7 @@ const printPDF = async () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(pdfUrl)
 
-    toast.add({ title: 'PDF downloaded successfully', color: 'green' })
+    toast.add({ title: 'PDF downloaded successfully', color: 'success' })
   } catch (err) {
     console.error('PDF Error:', err)
     toast.add({ title: `Failed to generate PDF: ${err}`, color: 'error' })
@@ -189,16 +189,16 @@ useHead({
 
 <template>
   <div class="space-y-6">
-    <div class="sm:flex sm:items-center sm:justify-between no-print">
+    <div class="sm:flex sm:items-center sm:justify-between no-print mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Assessment Summary</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Assessment Report</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {{ assessment?.assessmentNumber }} - {{ assessment?.student?.firstname }} {{ assessment?.student?.lastname }}
         </p>
       </div>
       <div class="mt-4 sm:ml-4 sm:mt-0 flex gap-2">
         <UButton color="primary" variant="solid" icon="i-lucide-download" size="lg" @click="printPDF">Print PDF</UButton>
-        <UButton color="gray" variant="ghost" icon="i-lucide-arrow-left" size="lg" @click="router.push('/reports')">Back</UButton>
+        <UButton color="neutral" variant="ghost" icon="i-lucide-arrow-left" size="lg" @click="router.push('/reports')">Back</UButton>
       </div>
     </div>
 
@@ -207,28 +207,80 @@ useHead({
     </div>
 
     <template v-else-if="assessment">
-      <div ref="printRef" class="print-content bg-white">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div ref="printRef" class="print-content bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <!-- Report Header -->
+        <div class="flex items-center justify-between mb-8 pb-6 border-b-2 border-violet-100">
+          <div class="flex items-center gap-4">
+            <div class="h-14 w-14 bg-violet-600 rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
+              <UIcon name="i-lucide-baby" class="h-8 w-8" />
+            </div>
+            <div>
+              <h1 class="text-3xl font-black text-gray-900 tracking-tight">KidsFirst</h1>
+              <p class="text-xs font-bold text-violet-600 uppercase tracking-widest">Development Report</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-bold text-gray-900">Assessment Number</p>
+            <p class="text-xl font-black text-violet-600">{{ assessment.assessmentNumber }}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-              <h3 class="text-base font-semibold mb-4 text-gray-900">Assessment Information</h3>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p class="text-sm text-gray-500">Assessment #</p>
-                  <p class="font-medium text-gray-900">{{ assessment.assessmentNumber }}</p>
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-900">Information ข้อมูลพื้นฐาน</h3>
+              </div>
+              <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex items-center gap-4">
+                  <div class="h-20 w-20 rounded-2xl bg-violet-100 flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-white shadow-md shadow-violet-200/50">
+                    <img v-if="assessment.student?.image" :src="assessment.student.image" class="h-full w-full object-cover" />
+                    <span v-else class="text-3xl">{{ assessment.student?.gender === 'female' ? '👧' : '👦' }}</span>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Student Name</p>
+                    <p class="text-xl font-black text-gray-900 leading-tight">{{ assessment.student?.firstname }} {{ assessment.student?.lastname }}</p>
+                    <p class="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full inline-block mt-1 uppercase">Gender: {{ assessment.student?.gender || '-' }}</p>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-sm text-gray-500">Student</p>
-                  <p class="font-medium text-gray-900">{{ assessment.student?.firstname }} {{ assessment.student?.lastname }}</p>
+                <div class="space-y-3">
+                  <div class="flex justify-between border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-500">Age:</span>
+                    <span class="text-sm font-semibold text-gray-900">{{ assessment.student?.age }} years</span>
+                  </div>
+                  <div class="flex justify-between border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-500">Birth Date:</span>
+                    <span class="text-sm font-semibold text-gray-900">{{ assessment.student?.birthDate ? new Date(assessment.student.birthDate).toLocaleDateString() : '-' }}</span>
+                  </div>
+                  <div class="flex justify-between border-b border-gray-100 pb-2">
+                    <span class="text-sm text-gray-500">Parent Name:</span>
+                    <span class="text-sm font-semibold text-gray-900">{{ assessment.student?.parentName || '-' }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-sm text-gray-500">Assessment Date:</span>
+                    <span class="text-sm font-semibold text-gray-900">{{ new Date(assessment.assessmentDate).toLocaleDateString() }}</span>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-sm text-gray-500">Age</p>
-                  <p class="font-medium text-gray-900">{{ assessment.student?.age }} years</p>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Assessment Date</p>
-                  <p class="font-medium text-gray-900">{{ new Date(assessment.assessmentDate).toLocaleDateString() }}</p>
-                </div>
+              </div>
+            </div>
+
+            <!-- Assessment Summary -->
+            <div v-if="assessment.summary" class="bg-white rounded-2xl border border-violet-100 shadow-sm overflow-hidden">
+              <div class="bg-violet-50 px-6 py-4 border-b border-violet-100">
+                <h3 class="text-lg font-bold text-violet-900">Assessment Summary บทสรุปผลการประเมิน</h3>
+              </div>
+              <div class="p-6">
+                <p class="text-sm leading-relaxed text-gray-700 whitespace-pre-line">{{ assessment.summary }}</p>
+              </div>
+            </div>
+
+            <!-- Assessment Recommendations -->
+            <div v-if="assessment.recommendation" class="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden">
+              <div class="bg-emerald-50 px-6 py-4 border-b border-emerald-100">
+                <h3 class="text-lg font-bold text-emerald-900">Assessment Recommend ข้อเสนอแนะการส่งเสริม</h3>
+              </div>
+              <div class="p-6">
+                <p class="text-sm leading-relaxed text-gray-700 whitespace-pre-line">{{ assessment.recommendation }}</p>
               </div>
             </div>
 
@@ -278,7 +330,7 @@ useHead({
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold text-gray-900">Child Development Profile</h3>
-                <span :class="['px-2 py-1 rounded-full text-sm', getLevelClass(assessment.overallLevel)]">
+                <span :class="['px-2 py-1 rounded-full text-sm', getLevelClass(assessment.overallLevel || '')]">
                   {{ assessment.overallLevel }}
                 </span>
               </div>

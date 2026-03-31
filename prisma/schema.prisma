@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -14,92 +14,98 @@ model User {
   lastname  String
   username  String   @unique
   password  String
-  role      String   @default("staff") // admin, staff
+  role      String   @default("staff")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Student {
-  id        Int      @id @default(autoincrement())
-  firstname String
-  lastname  String
-  age       Int
-  address   String?
-  phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int          @id @default(autoincrement())
+  firstname   String
+  lastname    String
+  age         Int
+  address     String?
+  phone       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  birthDate   DateTime?
+  gender      String?
+  parentName  String?
+  image       String?
   assessments Assessment[]
 }
 
 model Assessment {
-  id                Int      @id @default(autoincrement())
-  assessmentNumber  String   @unique
-  studentId         Int
-  student           Student  @relation(fields: [studentId], references: [id])
-  assessmentDate    DateTime @default(now())
-  overallScore      Float?
-  overallLevel      String?
-  status            String   @default("draft") // draft, completed
-  teacherNotes      String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  domainScores      DomainScore[]
+  id               Int           @id @default(autoincrement())
+  assessmentNumber String        @unique
+  studentId        Int
+  assessmentDate   DateTime      @default(now())
+  overallScore     Float?
+  overallLevel     String?
+  status           String        @default("draft")
+  teacherNotes     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  recommendation   String?
+  summary          String?
+  student          Student       @relation(fields: [studentId], references: [id])
+  domainScores     DomainScore[]
 }
 
 model DomainScore {
-  id            Int        @id @default(autoincrement())
-  assessmentId  Int
-  assessment    Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  domain        String     // sensory, visual, gross_motor, fine_motor, social_language
-  score         Float?
-  level         String?
-  observations  String?
+  id              Int             @id @default(autoincrement())
+  assessmentId    Int
+  domain          String
+  score           Float?
+  level           String?
+  observations    String?
   questionGroupId Int?
-  questionGroup   QuestionGroup? @relation(fields: [questionGroupId], references: [id])
-  questionScores QuestionScore[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  assessment      Assessment      @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionGroup   QuestionGroup?  @relation(fields: [questionGroupId], references: [id])
+  questionScores  QuestionScore[]
 }
 
 model QuestionScore {
-  id              Int         @id @default(autoincrement())
-  domainScoreId   Int
-  domainScore     DomainScore @relation(fields: [domainScoreId], references: [id], onDelete: Cascade)
-  questionText    String
-  score           Float?
-  comment         String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id            Int         @id @default(autoincrement())
+  domainScoreId Int
+  questionText  String
+  score         Float?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  comment       String?
+  domainScore   DomainScore @relation(fields: [domainScoreId], references: [id], onDelete: Cascade)
 }
 
 model QuestionGroup {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  domain      String   // sensory, visual, gross_motor, fine_motor, social_language
-  status      String   @default("active") // active, inactive
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  questions   Question[]
+  id           Int           @id @default(autoincrement())
+  title        String
+  description  String?
+  domain       String
+  status       String        @default("active")
+  sortOrder    Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   domainScores DomainScore[]
+  questions    Question[]
 }
 
 model Question {
-  id            Int           @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   questionGroupId Int
-  questionGroup QuestionGroup @relation(fields: [questionGroupId], references: [id], onDelete: Cascade)
-  questionText  String
-  description   String?
-  helperText    String?
-  scoreType     String       @default("numeric") // numeric, scale
-  minScore      Float        @default(1.0)
-  maxScore      Float        @default(3.0)
-  step          Float        @default(0.5)
-  required      Boolean      @default(false)
-  placeholder   String?
-  status        String       @default("active") // active, inactive
-  sortOrder     Int          @default(0)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  questionText    String
+  helperText      String?
+  scoreType       String        @default("numeric")
+  minScore        Float         @default(1.0)
+  maxScore        Float         @default(3.0)
+  step            Float         @default(0.5)
+  required        Boolean       @default(false)
+  placeholder     String?
+  status          String        @default("active")
+  sortOrder       Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  description     String?
+  questionGroup   QuestionGroup @relation(fields: [questionGroupId], references: [id], onDelete: Cascade)
 }

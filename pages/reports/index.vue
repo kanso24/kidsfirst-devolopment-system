@@ -106,21 +106,60 @@ const getLevelClass = (level: string) => {
 }
 
 const columns: TableColumn<any>[] = [
-  { accessorKey: 'assessmentDate', header: 'Assessment Date', cell: ({ row }) => new Date(row.original.assessmentDate).toLocaleDateString() },
-  { accessorKey: 'student', header: 'Student Name', cell: ({ row }) => `${row.original.student?.firstname} ${row.original.student?.lastname}` },
-  { accessorKey: 'domainScores', header: 'Assessments Group', cell: ({ row }) => row.original.domainScores?.[0]?.questionGroup?.title || '-' },
-  { accessorKey: 'overallScore', header: 'Overall Score', cell: ({ row }) => row.original.overallScore?.toFixed(2) || '-' },
-  { accessorKey: 'overallLevel', header: 'Overall Level', cell: ({ row }) => h('span', { class: `px-2 py-1 rounded-full text-xs ${getLevelClass(row.original.overallLevel)}` }, row.original.overallLevel || '-') },
   { 
-    accessorKey: 'actions', 
-    header: 'Actions',
-    cell: ({ row }) => h('div', { class: 'flex items-center gap-2' }, [
-      h('button', { type: 'button', class: 'p-2 rounded-lg hover:bg-gray-100 text-gray-500', onClick: () => navigateTo(`/reports/${row.original.id}`) }, [
-        h('svg', { xmlns: 'http://www.w3.org/2000/svg', width: '16', height: '16', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
-          h('path', { d: 'M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z' }),
-          h('circle', { cx: '12', cy: '12', r: '3' })
+    accessorKey: 'student', 
+    header: 'Student', 
+    cell: ({ row }) => {
+      const student = row.original.student
+      return h('div', { class: 'flex items-center gap-3' }, [
+        h('div', { class: 'h-10 w-10 rounded-full bg-violet-100 flex items-center justify-center overflow-hidden border border-violet-100' }, [
+          student?.image 
+            ? h('img', { src: student.image, class: 'h-full w-full object-cover' })
+            : h('span', { class: 'text-lg' }, student?.gender === 'female' ? '👧' : '👦')
+        ]),
+        h('div', { class: 'flex flex-col' }, [
+          h('span', { class: 'font-bold text-gray-900' }, `${student?.firstname} ${student?.lastname}`),
+          h('span', { class: 'text-xs text-gray-500' }, `${student?.age} years • ${student?.gender || '-'}`)
         ])
       ])
+    }
+  },
+  { 
+    accessorKey: 'assessmentDate', 
+    header: 'Date', 
+    cell: ({ row }) => h('div', { class: 'text-sm text-gray-600 font-medium' }, new Date(row.original.assessmentDate).toLocaleDateString())
+  },
+  { 
+    accessorKey: 'domainScores', 
+    header: 'Type', 
+    cell: ({ row }) => h('div', { class: 'text-xs font-bold text-violet-700 bg-violet-50 px-2 py-1 rounded' }, row.original.domainScores?.[0]?.questionGroup?.title || '-') 
+  },
+  { 
+    accessorKey: 'overallScore', 
+    header: 'Score', 
+    cell: ({ row }) => h('div', { class: 'font-black text-gray-900' }, row.original.overallScore?.toFixed(2) || '-') 
+  },
+  { 
+    accessorKey: 'overallLevel', 
+    header: 'Level', 
+    cell: ({ row }) => h('span', { class: `px-2 py-1 rounded-full text-xs font-bold ${getLevelClass(row.original.overallLevel)}` }, row.original.overallLevel || '-') 
+  },
+  {
+    accessorKey: 'recommendation',
+    header: 'Recommendations',
+    cell: ({ row }) => h('div', { class: 'max-w-xs truncate text-xs text-gray-500 italic' }, row.original.recommendation || 'No recommendations')
+  },
+  { 
+    accessorKey: 'actions', 
+    header: '', 
+    cell: ({ row }) => h('div', { class: 'flex justify-end' }, [
+      h(resolveComponent('UButton') as any, { 
+        icon: 'i-lucide-eye', 
+        color: 'primary', 
+        variant: 'ghost', 
+        size: 'sm',
+        onClick: () => navigateTo(`/reports/${row.original.id}`) 
+      })
     ])
   }
 ]

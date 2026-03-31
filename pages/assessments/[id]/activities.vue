@@ -12,6 +12,10 @@ interface Student {
   firstname?: string
   lastname?: string
   age?: number
+  image?: string
+  gender?: string
+  parentName?: string
+  birthDate?: string | Date
 }
 
 interface DomainScore {
@@ -26,6 +30,8 @@ interface Assessment {
   overallScore: number
   overallLevel: Level
   teacherNotes?: string
+  summary?: string
+  recommendation?: string
   student?: Student
   domainScores?: DomainScore[]
 }
@@ -382,6 +388,7 @@ watch(
   assessment,
   (value) => {
     teacherNotes.value = value?.teacherNotes ?? ''
+    parentNotes.value = value?.recommendation ?? ''
   },
   { immediate: true }
 )
@@ -465,78 +472,78 @@ function goToFullReport() {
         <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full" style="background: rgba(255,255,255,.08)" />
         <div class="absolute -bottom-8 -left-8 h-32 w-32 rounded-full" style="background: rgba(255,255,255,.05)" />
 
-        <div class="relative flex flex-col gap-6 md:flex-row md:items-center">
-          <div class="flex-1 space-y-3">
-            <div class="flex items-center gap-2">
-              <span class="text-2xl">✨</span>
-              <span
-                class="text-sm font-semibold uppercase tracking-widest"
-                style="color: rgba(255,255,255,.7)"
+        <div class="relative flex flex-col gap-8 md:flex-row md:items-center">
+          <!-- Student Image -->
+          <div class="relative flex-shrink-0">
+            <img v-if="student?.image" :src="student.image" class="h-28 w-28 rounded-3xl object-cover border-4 border-white/30 shadow-2xl" />
+            <div v-else class="h-28 w-28 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center border-4 border-dashed border-white/30 shadow-2xl">
+              <UIcon name="i-lucide-user" class="h-12 w-12 text-white/50" />
+            </div>
+            <div class="absolute -bottom-2 -right-2 transform transition-transform hover:scale-110">
+              <div class="bg-white rounded-xl p-1.5 shadow-lg">
+                <span class="text-xl">{{ student?.gender === 'female' ? '👧' : '👦' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex-1 space-y-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">✨</span>
+                <span
+                  class="text-xs font-bold uppercase tracking-widest"
+                  style="color: rgba(255,255,255,.7)"
+                >
+                  Monthly Activities Plan
+                </span>
+              </div>
+
+              <h1
+                class="text-3xl font-bold leading-tight md:text-5xl"
+                style="font-family: 'Fraunces', serif"
               >
-                Monthly Activities Plan
-              </span>
+                {{ student?.firstname }}'s Activities
+              </h1>
             </div>
 
-            <h1
-              class="text-3xl font-bold leading-tight md:text-4xl"
-              style="font-family: 'Fraunces', serif"
-            >
-              Recommended Development Activities
-            </h1>
-
-            <div class="flex flex-wrap gap-4 text-sm" style="color: rgba(255,255,255,.85)">
-              <span class="flex items-center gap-1.5">
+            <div class="flex flex-wrap gap-4 text-sm" style="color: rgba(255,255,255,.9)">
+              <div class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 backdrop-blur-md">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                  />
+                  <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
                 </svg>
-                {{ student?.firstname }} {{ student?.lastname }}
-              </span>
+                <span class="font-medium text-white">{{ student?.firstname }} {{ student?.lastname }}</span>
+              </div>
 
-              <span class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 backdrop-blur-md">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                  />
+                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
                 </svg>
-                Age {{ student?.age }} years
-              </span>
+                <span class="font-medium text-white">{{ student?.age }} months old</span>
+              </div>
 
-              <span class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 backdrop-blur-md">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                  />
+                  <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
                 </svg>
-                {{ currentMonth }}
-              </span>
+                <span class="font-medium text-white">{{ currentMonth }}</span>
+              </div>
             </div>
 
             <p
-              class="max-w-[480px] text-sm italic md:text-base"
-              style="color: rgba(255,255,255,.75)"
+              class="max-w-[550px] text-sm italic md:text-lg"
+              style="color: rgba(255,255,255,.8)"
             >
-              "Your child is currently in a golden stage of exploration. Activities should focus on problem-solving and social imitation."
+              "Supporting the growth of children with personalized developmental goals."
             </p>
           </div>
 
           <div class="text-right md:flex-shrink-0">
             <div
-              class="inline-block rounded-2xl px-4 py-3"
-              style="background: rgba(255,255,255,.15); backdrop-filter: blur(8px)"
+              class="inline-block rounded-2xl px-5 py-4"
+              style="background: rgba(255,255,255,.15); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.2)"
             >
-              <p class="text-xs" style="color: rgba(255,255,255,.7)">Assessment</p>
-              <p class="text-lg font-bold tracking-wide">{{ assessment.assessmentNumber }}</p>
+              <p class="text-[10px] font-bold uppercase tracking-widest" style="color: rgba(255,255,255,.7)">Assessment No.</p>
+              <p class="text-xl font-black tracking-tight">{{ assessment.assessmentNumber }}</p>
             </div>
           </div>
         </div>
@@ -605,10 +612,8 @@ function goToFullReport() {
               </span>
             </div>
 
-            <p class="text-sm leading-relaxed text-gray-600">
-              🌟 {{ student?.firstname }} is making wonderful progress! The activities below are
-              carefully chosen to support each development domain this month. Consistency and
-              patience are key — even 10 minutes a day makes a big difference.
+            <p class="text-sm leading-relaxed text-gray-600 whitespace-pre-line">
+              {{ assessment?.summary || `🌟 ${student?.firstname} is making wonderful progress! The activities below are carefully chosen to support each development domain this month. Consistency and patience are key — even 10 minutes a day makes a big difference.` }}
             </p>
           </div>
         </div>

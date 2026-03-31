@@ -33,9 +33,9 @@ const columns: TableColumn<any>[] = [
     accessorKey: 'actions', 
     header: 'Actions',
     cell: ({ row }) => h('div', { class: 'flex items-center gap-2' }, [
-      h(UButton, { color: 'gray', variant: 'ghost', icon: 'i-lucide-eye', size: 'sm', onClick: () => navigateTo(`/assessments/${row.original.id}`) }),
-      h(UButton, { color: 'gray', variant: 'ghost', icon: 'i-lucide-pencil', size: 'sm', onClick: () => navigateTo(`/assessments/${row.original.id}/edit`) }),
-      h(UButton, { color: 'red', variant: 'ghost', icon: 'i-lucide-trash-2', size: 'sm', onClick: () => confirmDelete(row.original) })
+      h(UButton, { color: 'neutral', variant: 'ghost', icon: 'i-lucide-eye', size: 'sm', onClick: () => navigateTo(`/assessments/${row.original.id}`) }),
+      h(UButton, { color: 'neutral', variant: 'ghost', icon: 'i-lucide-pencil', size: 'sm', onClick: () => navigateTo(`/assessments/${row.original.id}/edit`) }),
+      h(UButton, { color: 'error', variant: 'ghost', icon: 'i-lucide-trash-2', size: 'sm', onClick: () => confirmDelete(row.original) })
     ])
   }
 ]
@@ -72,11 +72,11 @@ const deleteAssessment = async () => {
   try {
     deleting.value = true
     await $fetch(`/api/assessments/${selectedAssessment.value.id}`, { method: 'DELETE' })
-    toast.add({ title: 'Assessment deleted successfully', color: 'green' })
+    toast.add({ title: 'Assessment deleted successfully', color: 'success' })
     isConfirmOpen.value = false
     refresh()
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to delete', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to delete', color: 'error' })
   } finally {
     deleting.value = false
   }
@@ -106,7 +106,7 @@ const deleteAssessment = async () => {
         <div class="flex gap-2">
           <USelect v-model="status" :items="[{ label: 'All Status', value: 'all' }, { label: 'Draft', value: 'draft' }, { label: 'Completed', value: 'completed' }]" placeholder="Status" class="w-32" />
           <USelect v-model="sortBy" :items="[{ label: 'Date', value: 'assessmentDate' }, { label: 'Assessment #', value: 'assessmentNumber' }]" class="w-32" />
-          <UButton icon="i-lucide-arrow-up-down" color="gray" variant="ghost" @click="sortOrder = sortOrder === 'desc' ? 'asc' : 'desc'" />
+          <UButton icon="i-lucide-arrow-up-down" color="neutral" variant="ghost" @click="sortOrder = sortOrder === 'desc' ? 'asc' : 'desc'" />
         </div>
       </div>
 

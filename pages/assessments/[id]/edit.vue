@@ -18,7 +18,10 @@ const selectedGroupId = ref<number | null>(null)
 
 const formState = reactive({
   studentId: null as number | null,
-  assessmentDate: ''
+  assessmentDate: '',
+  summary: '',
+  recommendation: '',
+  teacherNotes: ''
 })
 
 const domainScores = ref<Record<string, {
@@ -31,6 +34,9 @@ const domainScores = ref<Record<string, {
   questions: any[]
   questionScores: Record<string, { score: number; comment: string }>
 }>>({})
+ 
+const hasDomainScores = computed(() => Object.keys(domainScores.value).length > 0)
+const domainScoresList = computed(() => Object.entries(domainScores.value).map(([key, val]) => ({ key, ...val })))
 
 const getScoreOptions = (minScore: number, maxScore: number) => {
   const options: number[] = []
@@ -52,23 +58,26 @@ if (groupsData.value?.questionGroups) {
 
 const { data: assessmentData, pending: assessmentPending } = await useFetch(`/api/assessments/${assessmentId}`)
 
-watchEffect(() => {
-  if (assessmentData.value?.assessment) {
-    const assessment = assessmentData.value.assessment
+watch(assessmentData, (newData) => {
+  if (newData?.assessment) {
+    const assessment = newData.assessment
     formState.studentId = assessment.studentId
-    formState.assessmentDate = new Date(assessment.assessmentDate).toISOString().split('T')[0]
+    formState.assessmentDate = new Date(assessment.assessmentDate).toISOString().slice(0, 10)
+    formState.summary = assessment.summary || ''
+    formState.recommendation = assessment.recommendation || ''
+    formState.teacherNotes = assessment.teacherNotes || ''
     
-    domainScores.value = {}
-    selectedGroupIds.value = []
+    const newDomainScores: any = {}
+    const newSelectedIds: number[] = []
     
     assessment.domainScores?.forEach((ds: any) => {
       const groupId = ds.questionGroupId
       if (groupId) {
         const group = allQuestionGroups.value.find(g => g.id === groupId)
         if (group) {
-          selectedGroupIds.value.push(groupId)
+          newSelectedIds.push(groupId)
           const groupKey = `group_${groupId}`
-          domainScores.value[groupKey] = {
+          const newGroup: any = {
             groupId: groupId,
             groupTitle: group.title,
             domain: group.domain,
@@ -81,19 +90,46 @@ watchEffect(() => {
           
           group.questions?.forEach((q: any) => {
             const existingScore = ds.questionScores?.find((qs: any) => qs.questionText === q.questionText)
-            domainScores.value[groupKey].questionScores[q.id] = { 
+            newGroup.questionScores[q.id] = { 
               score: existingScore?.score || q.minScore || 1, 
               comment: existingScore?.comment || '' 
             }
           })
+          newDomainScores[groupKey] = newGroup
         }
       }
     })
+    
+    // Update refs atomically
+    selectedGroupIds.value = newSelectedIds
+    domainScores.value = newDomainScores
   }
-})
+}, { immediate: true })
+
+const getInitialDomainScore = (groupId: number) => {
+  const group = allQuestionGroups.value.find(g => g.id === groupId)
+  if (!group) return null
+  
+  const initial: any = {
+    groupId: groupId,
+    groupTitle: group.title,
+    domain: group.domain,
+    score: 2,
+    questionGroupId: groupId,
+    questionGroup: group,
+    questions: group.questions || [],
+    questionScores: {}
+  }
+  
+  group.questions?.forEach((q: any) => {
+    initial.questionScores[q.id] = { score: q.minScore || 1, comment: '' }
+  })
+  
+  return initial
+}
 
 watch(selectedGroupIds, (newIds, oldIds) => {
-  if (!oldIds || oldIds.length === 0) return
+  if (!oldIds) return
   
   const addedIds = newIds.filter(id => !oldIds.includes(id))
   const removedIds = oldIds.filter(id => !newIds.includes(id))
@@ -107,23 +143,11 @@ watch(selectedGroupIds, (newIds, oldIds) => {
   
   if (addedIds.length > 0) {
     addedIds.forEach(groupId => {
-      const group = allQuestionGroups.value.find(g => g.id === groupId)
-      if (group) {
-        const groupKey = `group_${groupId}`
-        if (!domainScores.value[groupKey]) {
-          domainScores.value[groupKey] = {
-            groupId: groupId,
-            groupTitle: group.title,
-            domain: group.domain,
-            score: 2,
-            questionGroupId: groupId,
-            questionGroup: group,
-            questions: group.questions || [],
-            questionScores: {}
-          }
-          group.questions?.forEach((q: any) => {
-            domainScores.value[groupKey].questionScores[q.id] = { score: q.minScore || 1, comment: '' }
-          })
+      const groupKey = `group_${groupId}`
+      if (!domainScores.value[groupKey]) {
+        const initial = getInitialDomainScore(groupId)
+        if (initial) {
+          domainScores.value[groupKey] = initial
         }
       }
     })
@@ -142,11 +166,15 @@ const removeGroup = (groupId: number) => {
 }
 
 const setQuestionScore = (groupKey: string, questionId: number, score: number) => {
-  domainScores.value[groupKey].questionScores[questionId].score = score
+  if (domainScores.value[groupKey]?.questionScores?.[questionId]) {
+    domainScores.value[groupKey].questionScores[questionId].score = score
+  }
 }
 
 const setQuestionComment = (groupKey: string, questionId: number, comment: string) => {
-  domainScores.value[groupKey].questionScores[questionId].comment = comment
+  if (domainScores.value[groupKey]?.questionScores?.[questionId]) {
+    domainScores.value[groupKey].questionScores[questionId].comment = comment
+  }
 }
 
 const calculateDomainScore = (groupKey: string) => {
@@ -180,7 +208,7 @@ const getLevelClass = (level: string) => {
   }
 }
 
-const getScoreButtonClass = (score: number, currentScore: number) => {
+const getScoreButtonClass = (score: number, currentScore: number | undefined) => {
   const base = 'px-3 py-1.5 rounded-lg text-sm font-medium transition-all'
   if (score === currentScore) {
     return `${base} bg-violet-600 text-white`
@@ -276,6 +304,9 @@ const updateAssessment = async () => {
     const payload = {
       studentId: formState.studentId,
       assessmentDate: formState.assessmentDate,
+      summary: formState.summary,
+      recommendation: formState.recommendation,
+      teacherNotes: formState.teacherNotes,
       status: 'completed',
       domainScores: Object.values(domainScores.value).map(ds => {
         const groupKey = `group_${ds.groupId}`
@@ -375,15 +406,33 @@ const updateAssessment = async () => {
                   <p class="font-medium">{{ allQuestionGroups.find(g => g.id === groupId)?.title }}</p>
                   <p class="text-sm text-gray-500">{{ allQuestionGroups.find(g => g.id === groupId)?.domain }}</p>
                 </div>
-                <UButton size="xs" variant="ghost" color="red" icon="i-lucide-x" @click="removeGroup(groupId)" />
+                <UButton size="xs" variant="ghost" color="error" icon="i-lucide-x" @click="removeGroup(groupId)" />
               </div>
             </div>
           </div>
         </UCard>
 
+        <!-- Assessment Notes -->
+        <UCard>
+          <template #header>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Assessment Notes</h3>
+          </template>
+          <div class="space-y-4">
+            <UFormField label="Assessment Summary" help="Provide a brief summary of the assessment findings.">
+              <UTextarea v-model="formState.summary" placeholder="Enter assessment summary..." class="w-full" size="lg" :rows="3" />
+            </UFormField>
+            <UFormField label="Assessment Recommendations" help="Provide recommendations based on the assessment.">
+              <UTextarea v-model="formState.recommendation" placeholder="Enter recommendations..." class="w-full" size="lg" :rows="3" />
+            </UFormField>
+            <UFormField label="Teacher Notes" help="Additional notes for the teacher.">
+              <UTextarea v-model="formState.teacherNotes" placeholder="Enter teacher notes..." class="w-full" size="lg" :rows="3" />
+            </UFormField>
+          </div>
+        </UCard>
+
         <!-- Assessment Information -->
-        <template v-if="Object.keys(domainScores).length > 0">
-          <UCard v-for="(ds, groupKey) in domainScores" :key="groupKey">
+        <template v-if="hasDomainScores">
+          <UCard v-for="ds in domainScoresList" :key="ds.key">
             <template #header>
               <div class="flex items-center justify-between">
                 <h3 class="text-base font-semibold">{{ ds.groupTitle }}</h3>
@@ -403,16 +452,18 @@ const updateAssessment = async () => {
                       v-for="score in getScoreOptions(question.minScore || 1, question.maxScore || 3)"
                       :key="score"
                       :class="getScoreButtonClass(score, ds.questionScores[question.id]?.score)"
-                      @click="setQuestionScore(groupKey, question.id, score)"
+                      @click="setQuestionScore(ds.key, question.id, score)"
                     >
                       {{ score }}
                     </button>
                   </div>
                   <UInput 
-                    v-model="ds.questionScores[question.id].comment" 
+                    v-if="ds.questionScores[question.id]"
+                    :model-value="ds.questionScores[question.id].comment" 
                     placeholder="Comments"
                     class="w-full"
                     size="lg"
+                    @update:model-value="val => setQuestionComment(ds.key, question.id, val)"
                   />
                 </div>
               </div>
@@ -433,7 +484,7 @@ const updateAssessment = async () => {
             <h3 class="text-base font-semibold">Summary Assessment Scores</h3>
           </template>
           
-          <div v-if="Object.keys(domainScores).length > 0" class="space-y-4">
+          <div v-if="hasDomainScores" class="space-y-4">
             <!-- Overall Score -->
             <div class="p-4 bg-violet-50 dark:bg-violet-900/20 rounded-lg">
               <div class="flex items-center justify-between">

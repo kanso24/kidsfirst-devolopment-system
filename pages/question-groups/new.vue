@@ -40,10 +40,10 @@ const saveGroup = async () => {
       body
     })
     
-    toast.add({ title: 'Assessments Group created successfully', color: 'green' })
+    toast.add({ title: 'Assessments Group created successfully', color: 'success' })
     router.push('/question-groups')
   } catch (error: any) {
-    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'red' })
+    toast.add({ title: 'Error', description: error.statusMessage || 'Failed to save', color: 'error' })
   } finally {
     submitting.value = false
   }
@@ -114,7 +114,7 @@ const saveGroup = async () => {
         </div>
         
         <div class="flex justify-end gap-3 pt-4 border-t">
-          <UButton color="gray" variant="ghost" size="lg" @click="router.push('/question-groups')">Cancel</UButton>
+          <UButton color="neutral" variant="ghost" size="lg" @click="router.push('/question-groups')">Cancel</UButton>
           <UButton type="submit" color="primary" :loading="submitting" size="lg">Save</UButton>
         </div>
       </form>
